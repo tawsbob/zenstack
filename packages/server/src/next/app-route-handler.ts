@@ -22,10 +22,20 @@ export default function factory(
     const requestHandler = options.handler || RPCApiHandler();
 
     return async (req: NextRequest, context: Context) => {
-        const prisma = (await options.getPrisma(req)) as DbClientContract;
-        if (!prisma) {
-            return NextResponse.json({ message: 'unable to get prisma from request context' }, { status: 500 });
+        try {
+            const prisma = (await options.getPrisma(req)) as DbClientContract;
+            if (!prisma) {
+                return NextResponse.json({ message: 'unable to get prisma from request context' }, { status: 500 });
+            }
+        } catch (error){
+            const { message } = error;
+            return NextResponse.json(
+                { message },
+                { status: 400 }
+            )
         }
+        
+        
 
         const url = new URL(req.url);
         const query = Object.fromEntries(url.searchParams);
